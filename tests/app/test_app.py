@@ -16,7 +16,7 @@ class MyTestCase(unittest.TestCase):
     def test_app_returns_input(self):
         # prepare
         expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/input2.pickle'))
-        config: dict = {}
+        config: dict = {"stop_duration": 12, "distance_tolerance": 100}
 
         # execute
         actual = self.sut.execute(data=expected, config=config)

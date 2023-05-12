@@ -1,5 +1,20 @@
 {
-  "settings": [],
+  "settings": [
+    {
+      "id": "stop_duration",
+      "name": "Stop duration",
+      "description": "The amount of time (in hours) to consider a tag stationary.",
+      "defaultValue": 12,
+      "type": "INTEGER"
+    },
+    {
+      "id": "distance_tolerance",
+      "name": "Distance tolerance",
+      "description": "The amount of tolerance around GPS coordinates.",
+      "defaultValue": 100,
+      "type": "INTEGER"
+    }
+   ],
   "providedAppFiles": [],
   "createsArtifacts": false,
   "license": {
