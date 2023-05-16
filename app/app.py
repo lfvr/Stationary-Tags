@@ -27,6 +27,6 @@ class App(object):
             logging.error(f'Fewer than 2 entries for {data.id}, unable to make stationarity determination')
             return False, None
             
-        if segment.get_length() <= config["stop_duration"]:
+        if segment.get_length() <= config["distance_tolerance"]:
             return True, data.get_end_location()
         return False, None

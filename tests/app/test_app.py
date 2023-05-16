@@ -1,11 +1,14 @@
-import unittest
+from dataclasses import dataclass
+from datetime import datetime
 import os
-from tests.config.definitions import ROOT_DIR
+import unittest
+import geopandas as gpd
+import movingpandas as mpd
+import pandas as pd
+from shapely.geometry import Point
 from app.app import App
 from sdk.moveapps_io import MoveAppsIo
-import pandas as pd
-import movingpandas as mpd
-
+from tests.config.definitions import ROOT_DIR
 
 class MyTestCase(unittest.TestCase):
 
@@ -23,3 +26,31 @@ class MyTestCase(unittest.TestCase):
 
         # verif
         self.assertEqual(expected, actual)
+
+    def test_find_stops(self):
+        @dataclass
+        class Testcase:
+            name: str
+            traj: mpd.Trajectory
+            config: dict
+            expect: tuple[bool, Point]
+        default_config = {
+            "stop_duration": 12,
+            "distance_tolerance": 100,
+        }
+        testcases = [
+            Testcase(
+                "stop_at_end", 
+                traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
+                {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023,1,1,7,0,0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 13, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 20, 0, 0)}
+                ]).set_index('t'), crs='WSG84'), 1),
+                config=default_config, 
+                expect=[True, Point(1, 1)])
+        ]
+        for test in testcases:
+            stationary, location = self.sut.find_stops(test["traj"], test["config"])
+            self.assertEqual(stationary, test["expect"][0])
+            self.assertEqual(location, test["expect"][1])
