@@ -24,7 +24,7 @@ class MyTestCase(unittest.TestCase):
         # execute
         actual = self.sut.execute(data=expected, config=config)
 
-        # verif
+        # verify
         self.assertEqual(expected, actual)
 
     def test_find_stops(self):
