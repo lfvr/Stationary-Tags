@@ -19,7 +19,7 @@ class MyTestCase(unittest.TestCase):
     def test_app_returns_input(self):
         # prepare
         expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/input2.pickle'))
-        config: dict = {"stop_duration": 12, "distance_tolerance": 100}
+        config: dict = {"stop_duration": 15, "distance_tolerance": 100}
 
         # execute
         actual = self.sut.execute(data=expected, config=config)
@@ -38,20 +38,40 @@ class MyTestCase(unittest.TestCase):
                 self.expect = expect
 
         default_config = {
-            "stop_duration": 12,
+            "stop_duration": 2,
             "distance_tolerance": 100,
         }
         testcases = [
             Testcase(
-                "stop_at_end", 
+                "stop_at_end_returns_point", 
                 traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
                 {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
-                {'geometry': Point(2, 2), 't': datetime(2023,1,1,7,0,0)},
-                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 13, 0, 0)},
-                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 20, 0, 0)}
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 2, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 4, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
                 config=default_config, 
-                expect=[True, Point(2, 2)])
+                expect=[True, Point(2, 2)]),
+            Testcase(
+                "no_stop_returns_False", 
+                traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
+                {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
+                {'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 5, 0, 0)},
+                {'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
+                ]).set_index('t'), crs=4326), 1),
+                config=default_config, 
+                expect=[False, None]),
+            Testcase(
+                "stop_in_middle_returns_False", 
+                traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
+                {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
+                {'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 5, 0, 0)},
+                {'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
+                ]).set_index('t'), crs=4326), 1),
+                config=default_config, 
+                expect=[False, None]),
         ]
         for test in testcases:
             stationary, location = self.sut.find_stops(test.traj, test.config)
