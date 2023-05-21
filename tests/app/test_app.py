@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 import unittest
 import geopandas as gpd
+from matplotlib.testing.compare import compare_images
 import movingpandas as mpd
 import pandas as pd
 from shapely.geometry import Point
@@ -16,7 +17,7 @@ class MyTestCase(unittest.TestCase):
         os.environ['APP_ARTIFACTS_DIR'] = os.path.join(ROOT_DIR, 'tests/resources/output')
         self.sut = App(moveapps_io=MoveAppsIo())
 
-    def test_app_returns_input(self):
+    def test_app_returns_input(self) -> None:
         # prepare
         expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/input2.pickle'))
         config: dict = {"stop_duration": 15, "distance_tolerance": 100}
@@ -27,7 +28,7 @@ class MyTestCase(unittest.TestCase):
         # verify
         self.assertEqual(expected, actual)
 
-    def test_find_stops(self):
+    def test_find_stops(self) -> None:
 
         @dataclass
         class Testcase:
@@ -75,5 +76,29 @@ class MyTestCase(unittest.TestCase):
         ]
         for test in testcases:
             stationary, location = self.sut.find_stops(test.traj, test.config)
-            self.assertEqual(stationary, test.expect[0])
-            self.assertEqual(location, test.expect[1])
+            self.assertEqual(stationary, test.expect[0], f'{{test.name}} stationary value expect {{test.expect[0]}} got {{stationary}}')
+            self.assertEqual(location, test.expect[1], f'{{test.name}} location value expect {{test.expect[1]}} got {{location}}')
+    
+    def test_plot_map(self) -> None:
+        
+        @dataclass
+        class Testcase:
+            def __init__(self, name: str, points: list[Point], expect: str):
+                self.name = name
+                self.points = points
+                self.expect = expect
+        
+        testcases = [
+            Testcase(
+                name="stop_at_end_returns_point", 
+                points=gpd.GeoDataFrame(pd.DataFrame([
+                {'index': 1, 'geometry': Point(-58.66, -34.58)},
+                {'index': 2, 'geometry': Point(-47.91, -15.78)},
+                ]).set_index('index'), crs=4326),
+                expect='test_1.png'),
+            ]
+
+        for test in testcases:
+            self.sut.plot_map(test.points)
+            result = compare_images(self.sut.moveapps_io.create_artifacts_file(test.expect), self.sut.moveapps_io.create_artifacts_file('stationarity.png'), tol=5)
+            self.assertIsNone(result, result)

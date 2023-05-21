@@ -1,5 +1,7 @@
 from datetime import timedelta
+import geopandas as gpd
 import logging
+import matplotlib.pyplot as plt
 import movingpandas as mpd
 from shapely.geometry import Point
 from sdk.moveapps_spec import hook_impl
@@ -30,3 +32,30 @@ class App(object):
         if segment.get_length() <= config["distance_tolerance"]:
             return True, data.get_end_location()
         return False, None
+
+    def plot_map(self, points: gpd.GeoDataFrame) -> None:
+        # the percentage distance betweeen the axis boundary and the outermost point   
+        margin = 0.05
+        # TODO: this dataset is deprecated and will be removed from GeoPandas v1.0 - find alternative
+        world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
+        _, gax = plt.subplots(figsize=(10,10))
+        world.plot(ax=gax, edgecolor='black',color='white')
+        gax.set_xlabel('longitude')
+        gax.set_ylabel('latitude')
+
+        # get the bounds of the data to limit the map size
+        bounds = points.total_bounds
+        x_margin = (bounds[2] - bounds[0]) * margin
+        y_margin = (bounds[3] - bounds[1]) * margin
+        plt.xlim(bounds[0] - x_margin, bounds[2] + x_margin)
+        plt.ylim(bounds[1] - y_margin, bounds[3] + y_margin)
+
+        # ensure map outlines go up to the axis boundaries
+        gax.spines['top'].set_visible(False)
+        gax.spines['right'].set_visible(False)
+
+        # plot the points
+        points.plot(ax=gax, color='red', alpha = 0.5)
+        path = self.moveapps_io.create_artifacts_file('stationarity.png')
+        plt.savefig(path)
+        plt.close()
