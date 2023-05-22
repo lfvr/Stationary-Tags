@@ -29,6 +29,12 @@ class MyTestCase(unittest.TestCase):
         # verify
         self.assertEqual(expected, actual)
 
+    def test_full_app_flow(self) -> None:
+        expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/rhino_edited.pickle'))
+        config: dict = {"stop_duration": 10, "distance_tolerance": 100}
+        actual = self.sut.execute(data=expected, config=config)
+        self.assertEqual(expected, actual)
+
     def test_stopped(self) -> None:
 
         @dataclass

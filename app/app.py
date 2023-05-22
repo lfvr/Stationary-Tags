@@ -40,7 +40,9 @@ class App(object):
                 ids.append(traj.id)
         stops = data.filter(self.id_column, ids).get_end_locations()
         if not stops.empty:
-            stops.set_crs(data.to_traj_gdf().crs, inplace=True)
+            # Temporary while crs is set incorrectly in import. Update to commented out code once fixed.
+            # stops.set_crs(data.to_traj_gdf().crs, inplace=True)
+            stops.set_crs("epsg:4326", inplace=True)
         return stops
 
     def plot_map(self, points: gpd.GeoDataFrame) -> None:
