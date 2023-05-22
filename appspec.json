@@ -16,21 +16,21 @@
     }
    ],
   "providedAppFiles": [],
-  "createsArtifacts": false,
+  "createsArtifacts": true,
   "license": {
     "key": "MIT"
   },
   "language": "eng",
   "keywords": [
-    "example",
-    "template"
+    "Python",
+    "stationarity"
   ],
   "people": [
     {
-      "firstName": "Charles",
+      "firstName": "Lauren",
       "middleInitials": null,
-      "lastName": "Darwin",
-      "email": "creator@example.com",
+      "lastName": "Minchin",
+      "email": "lfvminchin@gmail.com",
       "roles": [
         "author",
         "creator"
@@ -40,21 +40,8 @@
       "affiliationRor": null
     }
   ],
-  "funding": [
-    {
-      "name": "funder name",
-      "comment": "grant for App"
-    }
-  ],
-  "references": [
-    {
-      "type": "IsDescribedBy",
-      "note": "Darwin, C. 1900. The creation. Journal XY. 1-2",
-      "url": "https://anylink.xyz"
-    }
-  ],
   "documentation": {
-    "url": "https://github.com/yourAccount/my-app/README.md"
+    "url": "https://github.com/lfvr/emac23/README.md"
   }
 }
 
