@@ -49,7 +49,7 @@ class App(object):
         # TODO: this dataset is deprecated and will be removed from GeoPandas v1.0 - find alternative
         world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
         _, gax = plt.subplots(figsize=(10,10))
-        world.plot(ax=gax, edgecolor='black',color='white')
+        world.plot(ax=gax, edgecolor='blue',color='white')
         gax.set_xlabel('longitude')
         gax.set_ylabel('latitude')
 
@@ -66,6 +66,8 @@ class App(object):
 
         # plot the points
         points.plot(ax=gax, color='red', alpha = 0.5)
+        for x, y, label in zip(points['geometry'].x, points['geometry'].y, points[self.id_column]):
+            gax.annotate(f'{label}: {x,y}', xy=(x,y), xytext=(4,4), textcoords='offset points')
         path = self.moveapps_io.create_artifacts_file('stationarity.png')
         plt.savefig(path)
         plt.close()

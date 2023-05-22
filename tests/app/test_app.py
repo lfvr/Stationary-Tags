@@ -158,7 +158,7 @@ class MyTestCase(unittest.TestCase):
                 points=gpd.GeoDataFrame(pd.DataFrame([
                 {'trackId': 1, 'geometry': Point(-58.66, -34.58)},
                 {'trackId': 2, 'geometry': Point(-47.91, -15.78)},
-                ]).set_index('trackId'), crs=4326),
+                ]), crs=4326),
                 expect='test_1.png'),
             ]
 
