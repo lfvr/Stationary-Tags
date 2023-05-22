@@ -10,18 +10,17 @@ class App(object):
 
     def __init__(self, moveapps_io):
         self.moveapps_io = moveapps_io
+        self.id_column = 'trackId'
 
     @hook_impl
     def execute(self, data: mpd.TrajectoryCollection, config: dict) -> mpd.TrajectoryCollection:
         logging.info(f'Starting stationarity detection')
-        for traj in data:
-            stopped = self.find_stopped(traj, config)
-            if stopped:
-                logging.info(f'{traj.id} stopped at {traj.get_end_location()}')
-                print(f'{traj.id} stopped at {traj.get_end_location()}')
+        stops = self.stops_gdf(data, config)
+        if not stops.empty:
+            self.plot_map(stops)
         return data
     
-    def find_stopped(self, data: mpd.Trajectory, config: dict) -> bool:
+    def stopped(self, data: mpd.Trajectory, config: dict) -> bool:
         earliest_time = data.get_end_time() - timedelta(hours=config["stop_duration"])
         try:
             segment = data.get_segment_between(earliest_time, data.get_end_time())
@@ -33,6 +32,16 @@ class App(object):
             return True
 
         return False
+
+    def stops_gdf(self, data: mpd.TrajectoryCollection, config: dict) -> gpd.GeoDataFrame:
+        ids: list[str] = []
+        for traj in data:
+            if self.stopped(traj, config):
+                ids.append(traj.id)
+        stops = data.filter(self.id_column, ids).get_end_locations()
+        if not stops.empty:
+            stops.set_crs(data.to_traj_gdf().crs, inplace=True)
+        return stops
 
     def plot_map(self, points: gpd.GeoDataFrame) -> None:
         # the percentage distance betweeen the axis boundary and the outermost point   
