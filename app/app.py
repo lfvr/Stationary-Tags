@@ -15,23 +15,24 @@ class App(object):
     def execute(self, data: mpd.TrajectoryCollection, config: dict) -> mpd.TrajectoryCollection:
         logging.info(f'Starting stationarity detection')
         for traj in data:
-            stopped, location = self.find_stops(traj, config)
+            stopped = self.find_stopped(traj, config)
             if stopped:
-                logging.info(f'{traj.id} stopped at {location}')
-                print(f'{traj.id} stopped at {location}')
+                logging.info(f'{traj.id} stopped at {traj.get_end_location()}')
+                print(f'{traj.id} stopped at {traj.get_end_location()}')
         return data
     
-    def find_stops(self, data: mpd.Trajectory, config: dict) -> tuple[bool, Point]:
+    def find_stopped(self, data: mpd.Trajectory, config: dict) -> bool:
         earliest_time = data.get_end_time() - timedelta(hours=config["stop_duration"])
         try:
             segment = data.get_segment_between(earliest_time, data.get_end_time())
         except ValueError:
             logging.error(f'Fewer than 2 entries for {data.id}, unable to make stationarity determination')
-            return False, None
+            return False
             
         if segment.get_length() <= config["distance_tolerance"]:
-            return True, data.get_end_location()
-        return False, None
+            return True
+
+        return False
 
     def plot_map(self, points: gpd.GeoDataFrame) -> None:
         # the percentage distance betweeen the axis boundary and the outermost point   

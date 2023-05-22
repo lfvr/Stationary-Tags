@@ -28,11 +28,11 @@ class MyTestCase(unittest.TestCase):
         # verify
         self.assertEqual(expected, actual)
 
-    def test_find_stops(self) -> None:
+    def test_find_stopped(self) -> None:
 
         @dataclass
         class Testcase:
-            def __init__(self, name: str, traj: mpd.Trajectory, config: dict, expect: tuple[bool, Point]):
+            def __init__(self, name: str, traj: mpd.Trajectory, config: dict, expect: gpd.GeoSeries):
                 self.name = name
                 self.traj = traj
                 self.config = config
@@ -44,15 +44,16 @@ class MyTestCase(unittest.TestCase):
         }
         testcases = [
             Testcase(
-                "stop_at_end_returns_point", 
+                "stop_at_end_returns_True", 
                 traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
-                {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
-                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 2, 0, 0)},
-                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 3, 0, 0)},
-                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 4, 0, 0)}
+                {'id': 1, 'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
+                {'id': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 2, 0, 0)},
+                {'id': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'id': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 4, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
                 config=default_config, 
-                expect=[True, Point(2, 2)]),
+                expect=True
+            ),
             Testcase(
                 "no_stop_returns_False", 
                 traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
@@ -62,7 +63,8 @@ class MyTestCase(unittest.TestCase):
                 {'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
                 config=default_config, 
-                expect=[False, None]),
+                expect=False,
+            ),
             Testcase(
                 "stop_in_middle_returns_False", 
                 traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
@@ -72,12 +74,12 @@ class MyTestCase(unittest.TestCase):
                 {'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
                 config=default_config, 
-                expect=[False, None]),
+                expect=False,
+            ),
         ]
         for test in testcases:
-            stationary, location = self.sut.find_stops(test.traj, test.config)
-            self.assertEqual(stationary, test.expect[0], f'{{test.name}} stationary value expect {{test.expect[0]}} got {{stationary}}')
-            self.assertEqual(location, test.expect[1], f'{{test.name}} location value expect {{test.expect[1]}} got {{location}}')
+            location = self.sut.find_stopped(test.traj, test.config)
+            self.assertEqual(location, test.expect, f'{{test.name}} location value expect {{test.expect}} got {{location}}')
     
     def test_plot_map(self) -> None:
         
