@@ -1,9 +1,10 @@
 from datetime import timedelta
-import geopandas as gpd
 import logging
-import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import geopandas as gpd
+import hvplot
+import hvplot.pandas  # noqa
 import movingpandas as mpd
-from shapely.geometry import Point
 from sdk.moveapps_spec import hook_impl
 
 class App(object):
@@ -14,10 +15,12 @@ class App(object):
 
     @hook_impl
     def execute(self, data: mpd.TrajectoryCollection, config: dict) -> mpd.TrajectoryCollection:
-        logging.info(f'Starting stationarity detection')
+        logging.info('Starting stationarity detection')
         stops = self.stops_gdf(data, config)
-        if not stops.empty:
-            self.plot_map(stops)
+        if stops.empty:
+            logging.info('No stationary tags found')
+            return data
+        self.plot_map(stops)
         return data
     
     def stopped(self, data: mpd.Trajectory, config: dict) -> bool:
@@ -46,30 +49,17 @@ class App(object):
         return stops
 
     def plot_map(self, points: gpd.GeoDataFrame) -> None:
-        # the percentage distance betweeen the axis boundary and the outermost point   
-        margin = 0.05
-        # TODO: this dataset is deprecated and will be removed from GeoPandas v1.0 - find alternative
-        world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
-        _, gax = plt.subplots(figsize=(10,10))
-        world.plot(ax=gax, edgecolor='blue',color='white')
-        gax.set_xlabel('longitude')
-        gax.set_ylabel('latitude')
+        map = points.hvplot(
+            title='Stationary Tags', 
+            x='Longitude', y='Latitude',
+            geo=True, tiles='OSM',
+            color='red'
+        )
+        # workaround of issue https://github.com/holoviz/hvplot/issues/596 from https://stackoverflow.com/questions/67005004/how-can-i-overlay-text-labels-on-a-geographic-hvplot-points-plot
+        new_crs = points.to_crs('EPSG:3857').assign(x=lambda points: points.geometry.x, y=lambda points: points.geometry.y)
+        id_labels = new_crs.hvplot.labels(text='trackId', x="x", y="y")
 
-        # get the bounds of the data to limit the map size
-        bounds = points.total_bounds
-        x_margin = (bounds[2] - bounds[0]) * margin
-        y_margin = (bounds[3] - bounds[1]) * margin
-        plt.xlim(bounds[0] - x_margin, bounds[2] + x_margin)
-        plt.ylim(bounds[1] - y_margin, bounds[3] + y_margin)
-
-        # ensure map outlines go up to the axis boundaries
-        gax.spines['top'].set_visible(False)
-        gax.spines['right'].set_visible(False)
-
-        # plot the points
-        points.plot(ax=gax, color='red', alpha = 0.5)
-        for x, y, label in zip(points['geometry'].x, points['geometry'].y, points[self.id_column]):
-            gax.annotate(f'{label}: {x,y}', xy=(x,y), xytext=(4,4), textcoords='offset points')
-        path = self.moveapps_io.create_artifacts_file('stationarity.png')
-        plt.savefig(path)
-        plt.close()
+        render = map * id_labels.opts(text_baseline='bottom')
+        hvplot.save(render, self.moveapps_io.create_artifacts_file('stationarity.html'))
+        logging.info('Created html map for stationary tags')
+        return

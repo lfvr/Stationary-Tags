@@ -148,27 +148,3 @@ class MyTestCase(unittest.TestCase):
             if got.empty and test.expect.empty:
                 continue
             assert_geodataframe_equal(got, test.expect, check_dtype=False)
-
-    def test_plot_map(self) -> None:
-        
-        @dataclass
-        class Testcase:
-            def __init__(self, name: str, points: list[Point], expect: str):
-                self.name = name
-                self.points = points
-                self.expect = expect
-        
-        testcases = [
-            Testcase(
-                name="stop_at_end_returns_point", 
-                points=gpd.GeoDataFrame(pd.DataFrame([
-                {'trackId': 1, 'geometry': Point(-58.66, -34.58)},
-                {'trackId': 2, 'geometry': Point(-47.91, -15.78)},
-                ]), crs=4326),
-                expect='test_1.png'),
-            ]
-
-        for test in testcases:
-            self.sut.plot_map(test.points)
-            result = compare_images(self.sut.moveapps_io.create_artifacts_file(test.expect), self.sut.moveapps_io.create_artifacts_file('stationarity.png'), tol=5)
-            self.assertIsNone(result, result)
