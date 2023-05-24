@@ -19,6 +19,7 @@ MovingPandas TrajectoryCollection in Movebank format
 
 ### Output data
 MovingPandas TrajectoryCollection in Movebank format
+
 This is the same data as was input; this app does not modify the data in any way.
 
 ### Artefacts
@@ -26,6 +27,7 @@ This is the same data as was input; this app does not modify the data in any way
 
 ### Settings 
 `Stop duration` (hours): The number of hours the tag must remain within the distance tolerance for this to be considered a stationary tag.
+
 `Distance tolerance` (metres): The maximum distance (in metres) the tag can move whilst still being considered stationary. This allows for location error from GPS readings. 
 
 ### Null or error handling
