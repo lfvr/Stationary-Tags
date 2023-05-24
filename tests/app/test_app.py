@@ -1,16 +1,17 @@
-from dataclasses import dataclass
-from datetime import datetime
 import os
 import unittest
+from dataclasses import dataclass
+from datetime import datetime
+
 import geopandas as gpd
-from geopandas.testing import assert_geodataframe_equal
-from matplotlib.testing.compare import compare_images
 import movingpandas as mpd
 import pandas as pd
+from app.app import App
+from geopandas.testing import assert_geodataframe_equal
+from sdk.moveapps_io import MoveAppsIo
 from shapely.geometry import Point
 from tests.config.definitions import ROOT_DIR
-from app.app import App
-from sdk.moveapps_io import MoveAppsIo
+
 
 class MyTestCase(unittest.TestCase):
 
@@ -30,19 +31,23 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_full_app_flow(self) -> None:
+        # prepare
         expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/rhino_edited.pickle'))
         config: dict = {"stop_duration": 10, "distance_tolerance": 100}
+        
+        # execute
         actual = self.sut.execute(data=expected, config=config)
+        
+        # verify
         self.assertEqual(expected, actual)
 
     def test_stopped(self) -> None:
-
+        # prepare
         @dataclass
         class Testcase:
-            def __init__(self, name: str, traj: mpd.Trajectory, config: dict, expect: bool):
+            def __init__(self, name: str, traj: mpd.Trajectory, expect: bool):
                 self.name = name
                 self.traj = traj
-                self.config = config
                 self.expect = expect
 
         default_config = {
@@ -58,7 +63,6 @@ class MyTestCase(unittest.TestCase):
                 {'id': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 3, 0, 0)},
                 {'id': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 4, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
-                config=default_config, 
                 expect=True
             ),
             Testcase(
@@ -69,7 +73,6 @@ class MyTestCase(unittest.TestCase):
                 {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 5, 0, 0)},
                 {'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
-                config=default_config, 
                 expect=False,
             ),
             Testcase(
@@ -80,21 +83,24 @@ class MyTestCase(unittest.TestCase):
                 {'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 5, 0, 0)},
                 {'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
-                config=default_config, 
                 expect=False,
             ),
         ]
+
         for test in testcases:
-            location = self.sut.stopped(test.traj, test.config)
+            # execute
+            location = self.sut.stopped(test.traj, default_config)
+
+            # verify
             self.assertEqual(location, test.expect, f'{{test.name}} location value expect {{test.expect}} got {{location}}')
     
     def test_stops_gdf(self) -> None:
+        # prepare
         @dataclass
         class Testcase:
-            def __init__(self, name: str, traj: mpd.TrajectoryCollection, config: dict, expect: gpd.GeoDataFrame):
+            def __init__(self, name: str, traj: mpd.TrajectoryCollection, expect: gpd.GeoDataFrame):
                 self.name = name
                 self.traj = traj
-                self.config = config
                 self.expect = expect
 
         default_config = {"stop_duration": 2, "distance_tolerance": 100}
@@ -126,24 +132,24 @@ class MyTestCase(unittest.TestCase):
             Testcase(
                 "single_stopped", 
                 traj=mpd.TrajectoryCollection([traj_1, traj_2, traj_3]),
-                config=default_config, 
                 expect=gpd.GeoDataFrame({'trackId': [1], 'geometry': [Point(2, 2)]}, crs=4326)
             ),
             Testcase(
                 "no_stops",
                 traj=mpd.TrajectoryCollection([traj_2, traj_3]),
-                config=default_config,
                 expect=gpd.GeoDataFrame(),
             ),
             Testcase(
                 "multiple_stopped",
                 traj=mpd.TrajectoryCollection([traj_1, traj_2, traj_3, traj_4]),
-                config=default_config,
                 expect=gpd.GeoDataFrame({'trackId': [1, 4], 'geometry': [Point(2, 2), Point(3, 3)]}, crs=4326)
             ),
         ]
         for test in testcases:
-            got = self.sut.stops_gdf(test.traj, test.config)
+            # execute
+            got = self.sut.stops_gdf(test.traj, default_config)
+
+            # verify
             # gdf compare dataframes doesn't work on empty
             if got.empty and test.expect.empty:
                 continue

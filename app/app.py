@@ -1,11 +1,12 @@
-from datetime import timedelta
 import logging
-import cartopy.crs as ccrs
+from datetime import timedelta
+
 import geopandas as gpd
 import hvplot
 import hvplot.pandas  # noqa
 import movingpandas as mpd
 from sdk.moveapps_spec import hook_impl
+
 
 class App(object):
 
@@ -55,7 +56,8 @@ class App(object):
             geo=True, tiles='OSM',
             color='red'
         )
-        # workaround of issue https://github.com/holoviz/hvplot/issues/596 from https://stackoverflow.com/questions/67005004/how-can-i-overlay-text-labels-on-a-geographic-hvplot-points-plot
+        # workaround of issue https://github.com/holoviz/hvplot/issues/596
+        # kudos: https://stackoverflow.com/questions/67005004/how-can-i-overlay-text-labels-on-a-geographic-hvplot-points-plot
         new_crs = points.to_crs('EPSG:3857').assign(x=lambda points: points.geometry.x, y=lambda points: points.geometry.y)
         id_labels = new_crs.hvplot.labels(text='trackId', x="x", y="y")
 
