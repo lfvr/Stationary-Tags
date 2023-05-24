@@ -62,6 +62,6 @@ class App(object):
         id_labels = new_crs.hvplot.labels(text='trackId', x="x", y="y")
 
         render = map * id_labels.opts(text_baseline='bottom')
-        hvplot.save(render, self.moveapps_io.create_artifacts_file('stationarity.html'))
+        hvplot.save(render, self.moveapps_io.create_artifacts_file('stationary.html'))
         logging.info('Created html map for stationary tags')
         return
