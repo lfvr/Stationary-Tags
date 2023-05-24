@@ -1,6 +1,6 @@
 name: emac230523
 channels:
-  - defaults
+  - conda-forge
 dependencies:
   - geopandas
   - python=3.10
