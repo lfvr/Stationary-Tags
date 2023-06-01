@@ -51,11 +51,22 @@ class App(object):
 
     def plot_map(self, points: gpd.GeoDataFrame) -> None:
         map = points.hvplot(
-            title='Stationary Tags', 
+            title='Stationary Tags',
             x='Longitude', y='Latitude',
             geo=True, tiles='OSM',
             color='red'
         )
+        if len(points) == 1:
+            # holoviz can't automatically calculate smart limits when there is only one point to plot - add them manually
+            bounds = points.total_bounds
+            map = points.hvplot(
+                title='Stationary Tags',
+                xlim=(bounds[0] - 1, bounds[2] + 1),
+                ylim=(bounds[1] - 1, bounds[3] + 1),
+                x='Longitude', y='Latitude',
+                geo=True, tiles='OSM',
+                color='red'
+            )
         # workaround of issue https://github.com/holoviz/hvplot/issues/596
         # kudos: https://stackoverflow.com/questions/67005004/how-can-i-overlay-text-labels-on-a-geographic-hvplot-points-plot
         new_crs = points.to_crs('EPSG:3857').assign(x=lambda points: points.geometry.x, y=lambda points: points.geometry.y)
