@@ -1,4 +1,4 @@
-# Stationary Tags [Minchin]
+# Stationary Tags
 
 MoveApps
 
