@@ -5,8 +5,11 @@ import geopandas as gpd
 import hvplot
 import hvplot.pandas  # noqa
 import movingpandas as mpd
+from flask import Flask, render_template
 from sdk.moveapps_spec import hook_impl
 
+
+flask = Flask(__name__) 
 
 class App(object):
 
@@ -73,6 +76,12 @@ class App(object):
         id_labels = new_crs.hvplot.labels(text='trackId', x="x", y="y")
 
         render = map * id_labels.opts(text_baseline='bottom')
-        hvplot.save(render, self.moveapps_io.create_artifacts_file('stationary.html'))
+        # hvplot.save(render, self.moveapps_io.create_artifacts_file('stationary.html'))
+        hvplot.save(render, ('./app/templates/stationary.html'))
         logging.info('Created html map for stationary tags')
         return
+
+    
+@flask.route("/")
+def index():
+    return render_template("stationary.html")
