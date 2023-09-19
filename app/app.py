@@ -53,6 +53,7 @@ class App(object):
         map = points.hvplot(
             title='Stationary Tags',
             x='Longitude', y='Latitude',
+            width=1280, height=600,
             geo=True, tiles='OSM',
             color='red'
         )
