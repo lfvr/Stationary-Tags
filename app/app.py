@@ -6,6 +6,7 @@ import hvplot
 import hvplot.pandas  # noqa
 import movingpandas as mpd
 from sdk.moveapps_spec import hook_impl
+from shapely.geometry import LineString
 
 
 class App(object):
@@ -33,7 +34,10 @@ class App(object):
             return False
         
         bb = segment.get_bbox()
-        if abs(bb[0] - bb[2]) <= config["distance_tolerance"] and abs(bb[1] - bb[3]) <= config["distance_tolerance"]:
+        extremes = gpd.GeoSeries(LineString(((bb[0], bb[1]), (bb[2], bb[3]))), crs=data.crs)
+        # Need to transform data into a metric projected CRS.
+        extremes = extremes.to_crs("ESRI:54031")
+        if extremes.length[0] <= config["distance_tolerance"]:
             return True
 
         return False
