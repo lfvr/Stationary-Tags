@@ -47,6 +47,8 @@ class App(object):
             # Temporary while crs is set incorrectly in import. Update to commented out code once fixed.
             # stops.set_crs(data.to_traj_gdf().crs, inplace=True)
             stops.set_crs("epsg:4326", inplace=True)
+        logging.info('Created csv file for stationary tags')
+        stops.to_csv(self.moveapps_io.create_artifacts_file('stationary.csv'))
         return stops
 
     def plot_map(self, points: gpd.GeoDataFrame) -> None:
@@ -70,9 +72,6 @@ class App(object):
                 geo=True, tiles='OSM',
                 color='red'
             )
-        # workaround of issue https://github.com/holoviz/hvplot/issues/596
-        # kudos: https://stackoverflow.com/questions/67005004/how-can-i-overlay-text-labels-on-a-geographic-hvplot-points-plot
-        new_crs = points.to_crs('EPSG:3857').assign(x=lambda points: points.geometry.x, y=lambda points: points.geometry.y)
         render = map
         hvplot.save(render, self.moveapps_io.create_artifacts_file('stationary.html'))
         logging.info('Created html map for stationary tags')
