@@ -57,6 +57,7 @@ class App(object):
             title='Stationary Tags',
             xlabel='Longitude', ylabel='Latitude',
             hover_cols=['Longitude', 'Latitude', 'timestamps', 'trackId'],
+            size=200,
             width=1280, height=600,
             geo=True, tiles='OSM',
             color='red'
@@ -70,6 +71,8 @@ class App(object):
                 ylim=(bounds[1] - 1, bounds[3] + 1),
                 xlabel='Longitude', ylabel='Latitude',
                 hover_cols=['Longitude', 'Latitude', 'timestamps', 'trackId'],
+                size=200,
+                width=1280, height=600,
                 geo=True, tiles='OSM',
                 color='red'
             )
