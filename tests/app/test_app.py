@@ -32,7 +32,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_full_app_flow(self) -> None:
         # prepare
-        expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'resources/samples/stork_workshop.pickle'))
+        expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/rhino_edited.pickle'))
         config: dict = {"stop_duration": 10, "distance_tolerance": 100}
         
         # execute
