@@ -31,8 +31,9 @@ class App(object):
         except ValueError:
             logging.error(f'Fewer than 2 entries for {data.id}, unable to make stationarity determination')
             return False
-            
-        if segment.get_length() <= config["distance_tolerance"]:
+        
+        bb = segment.get_bbox()
+        if abs(bb[0] - bb[2]) <= config["distance_tolerance"] and abs(bb[1] - bb[3]) <= config["distance_tolerance"]:
             return True
 
         return False

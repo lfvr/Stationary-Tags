@@ -59,9 +59,9 @@ class MyTestCase(unittest.TestCase):
                 "stop_at_end_returns_True", 
                 traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
                 {'id': 1, 'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
-                {'id': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 2, 0, 0)},
-                {'id': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 3, 0, 0)},
-                {'id': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 4, 0, 0)}
+                {'id': 1, 'geometry': Point(200, 200), 't': datetime(2023, 1, 1, 2, 0, 0)},
+                {'id': 1, 'geometry': Point(220, 220), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'id': 1, 'geometry': Point(210, 210), 't': datetime(2023, 1, 1, 4, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
                 expect=True
             ),
@@ -69,9 +69,9 @@ class MyTestCase(unittest.TestCase):
                 "no_stop_returns_False", 
                 traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
                 {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
-                {'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 3, 0, 0)},
-                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 5, 0, 0)},
-                {'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
+                {'geometry': Point(100, 100), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'geometry': Point(200, 200), 't': datetime(2023, 1, 1, 5, 0, 0)},
+                {'geometry': Point(350, 350), 't': datetime(2023, 1, 1, 7, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
                 expect=False,
             ),
@@ -79,12 +79,22 @@ class MyTestCase(unittest.TestCase):
                 "stop_in_middle_returns_False", 
                 traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
                 {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
-                {'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 3, 0, 0)},
-                {'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 5, 0, 0)},
-                {'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
+                {'geometry': Point(100, 100), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'geometry': Point(100, 100), 't': datetime(2023, 1, 1, 5, 0, 0)},
+                {'geometry': Point(300, 300), 't': datetime(2023, 1, 1, 7, 0, 0)}
                 ]).set_index('t'), crs=4326), 1),
                 expect=False,
             ),
+            Testcase(
+                "bounding_box_dimensions_used_over_trajectory",
+                traj=mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
+                {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
+                {'geometry': Point(325, 325), 't': datetime(2023, 1, 1, 2, 0, 0)},
+                {'geometry': Point(250, 250), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'geometry': Point(335, 335), 't': datetime(2023, 1, 1, 4, 0, 0)}
+                ]).set_index('t'), crs=4326), 1),
+                expect=True,
+            )
         ]
 
         for test in testcases:
@@ -103,7 +113,7 @@ class MyTestCase(unittest.TestCase):
                 self.traj = traj
                 self.expect = expect
 
-        default_config = {"stop_duration": 2, "distance_tolerance": 100}
+        default_config = {"stop_duration": 2, "distance_tolerance": 1}
         traj_1 = mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
                 {'trackId': 1, 'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
                 {'trackId': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 2, 0, 0)},
@@ -114,7 +124,7 @@ class MyTestCase(unittest.TestCase):
                 {'trackId': 2, 'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
                 {'trackId': 2, 'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 3, 0, 0)},
                 {'trackId': 2, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 5, 0, 0)},
-                {'trackId': 2, 'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
+                {'trackId': 2, 'geometry': Point(5, 5), 't': datetime(2023, 1, 1, 7, 0, 0)}
                 ]).set_index('t'), crs=4326), traj_id=2)
         traj_3 = mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
                 {'trackId': 3, 'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
