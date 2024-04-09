@@ -1,3 +1,2 @@
 output/*
 !output/.keep
-!output/test_*.png
