@@ -9,3 +9,6 @@ environment.yml
 README.md
 # misc
 .idea/
+# avoid trying to update template-sync as lacking workflow permissions
+.github/workflows/template-sync.yml
+.github/.templatesyncignore
