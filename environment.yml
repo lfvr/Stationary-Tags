@@ -14,4 +14,5 @@ dependencies:
   - hvplot
   - cython
   - geoviews-core
+  - deprecated
 prefix: /usr/local/anaconda3/envs/emac230523
