@@ -13,6 +13,20 @@
       "description": "The amount of tolerance around GPS coordinates.",
       "defaultValue": 100,
       "type": "INTEGER"
+    },
+    {
+      "id": "filter_output",
+      "name": "Filter output to only show stationary tags",
+      "description": "Set to true to only include stationary tags (and exclude all non-stationary tags).",
+      "defaultValue": false,
+      "type": "BOOLEAN"
+    },
+    {
+      "id": "filter_duration",
+      "name": "Filter duration",
+      "description": "If filter output is set to true, how much time (in hours) of the stop trajectory to preserve.",
+      "defaultValue": 24,
+      "type": "INTEGER"
     }
    ],
   "providedAppFiles": [],
