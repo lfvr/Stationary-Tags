@@ -6,7 +6,7 @@ dependencies:
   - python=3.10
   - python-dotenv
   - pluggy
-  - movingpandas=0.16.0
+  - movingpandas=0.17.1
   - pandas
   - matplotlib
   - pyshp

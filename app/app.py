@@ -13,11 +13,11 @@ class App(object):
 
     def __init__(self, moveapps_io):
         self.moveapps_io = moveapps_io
-        self.id_column = 'trackId'
 
     @hook_impl
     def execute(self, data: mpd.TrajectoryCollection, config: dict) -> mpd.TrajectoryCollection:
         logging.info('Starting stationarity detection')
+        self.id_column = data.get_traj_id_col()
         stops = self.stops_gdf(data, config)
         if stops.empty:
             logging.info('No stationary tags found')
@@ -47,7 +47,7 @@ class App(object):
         for traj in data:
             if self.stopped(traj, config):
                 ids.append(traj.id)
-        stops = data.filter(self.id_column, ids).get_end_locations()
+        stops = data.filter(data.get_traj_id_col(), ids).get_end_locations()
         if not stops.empty:
             # Temporary while crs is set incorrectly in import. Update to commented out code once fixed.
             # stops.set_crs(data.to_traj_gdf().crs, inplace=True)
@@ -60,7 +60,7 @@ class App(object):
         map = points.hvplot(
             title='Stationary Tags',
             xlabel='Longitude', ylabel='Latitude',
-            hover_cols=['Longitude', 'Latitude', 'timestamps', 'trackId'],
+            hover_cols=['Longitude', 'Latitude', 'timestamps', self.id_column],
             size=200,
             width=1280, height=600,
             geo=True, tiles='OSM',
@@ -74,7 +74,7 @@ class App(object):
                 xlim=(bounds[0] - 1, bounds[2] + 1),
                 ylim=(bounds[1] - 1, bounds[3] + 1),
                 xlabel='Longitude', ylabel='Latitude',
-                hover_cols=['Longitude', 'Latitude', 'timestamps', 'trackId'],
+                hover_cols=['Longitude', 'Latitude', 'timestamps', self.id_column],
                 size=200,
                 width=1280, height=600,
                 geo=True, tiles='OSM',
