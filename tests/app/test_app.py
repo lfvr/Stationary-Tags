@@ -21,7 +21,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_app_returns_input(self):
         # prepare
-        expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'resources/samples/input2_LatLon.pickle'))
+        expected: mpd.TrajectoryCollection = pickle_to_tc('input2_LatLon.pickle')
         config: dict = {"stop_duration": 15, "distance_tolerance": 100}
 
         # execute
@@ -32,7 +32,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_full_app_flow(self) -> None:
         # prepare
-        expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'resources/samples/input2_LatLon.pickle'))
+        expected: mpd.TrajectoryCollection = pickle_to_tc('input2_LatLon.pickle')
         config: dict = {"stop_duration": 10, "distance_tolerance": 100}
         
         # execute
@@ -164,3 +164,6 @@ class MyTestCase(unittest.TestCase):
             if got.empty and test.expect.empty:
                 continue
             assert_geodataframe_equal(got, test.expect, check_dtype=False, check_less_precise=True)
+
+def pickle_to_tc(path):
+    return pd.read_pickle(os.path.join(ROOT_DIR, 'resources/samples', path))
