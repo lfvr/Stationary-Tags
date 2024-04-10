@@ -28,7 +28,11 @@ This is the same data as was input; this app does not modify the data in any way
 ### Settings 
 `Stop duration` (hours): The number of hours the tag must remain within the distance tolerance for this to be considered a stationary tag.
 
-`Distance tolerance` (metres): The maximum distance (in metres) the tag can move whilst still being considered stationary. This allows for location error from GPS readings. 
+`Distance tolerance` (metres): The maximum distance (in metres) the tag can move whilst still being considered stationary. This allows for location error from GPS readings.
+
+`Filter output` (true/false): If true, only output the stationary trajectories. When false, the input data will be output.
+
+`Filter duration` (hours): When filter output is set to true, how many hours of the stopped trajectory to output.
 
 ### Null or error handling
 The app currently expects the data to have CRS units in metres. If this is not the case, set the distance tolerance in the CRS units of the data.
