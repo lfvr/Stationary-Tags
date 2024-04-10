@@ -23,7 +23,19 @@ class App(object):
             logging.info('No stationary tags found')
             return data
         self.plot_map(stops)
-        return data
+        if not config["filter_output"]:
+            return data
+        
+        final_trajs = []
+        filtered = data.filter(self.id_column, stops[self.id_column].to_list())
+        for traj in filtered:
+            try:
+                segment = traj.get_segment_between(traj.get_end_time() - timedelta(hours=config["filter_duration"]), traj.get_end_time())
+            except ValueError:
+                logging.warning(f'Fewer than 2 data points in the final {config["filter_duration"]} hours, not including {traj.id} in output')
+
+            final_trajs.append(segment)
+        return mpd.TrajectoryCollection(final_trajs)
     
     def stopped(self, data: mpd.Trajectory, config: dict) -> bool:
         earliest_time = data.get_end_time() - timedelta(hours=config["stop_duration"])

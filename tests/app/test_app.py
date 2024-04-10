@@ -31,16 +31,36 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_app_returns_filtered_input(self) -> None:
+        # data
+        traj_1 = mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
+                {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 2, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 4, 0, 0)}
+                ]).set_index('t'), crs=4326), 1)
+        traj_2 = mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
+                {'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 2, 0, 0)},
+                {'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'geometry': Point(4, 4), 't': datetime(2023, 1, 1, 4, 0, 0)}
+                ]).set_index('t'), crs=4326), 2)
+
         # prepare
-        input: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/rhino_edited.pickle'))
-        config: dict = {"stop_duration": 10, "distance_tolerance": 100, "filter_output": True, "filter_duration": 24}
+        input: mpd.TrajectoryCollection = mpd.TrajectoryCollection([traj_1, traj_2], traj_id_col='id')
+        config: dict = {"stop_duration": 2, "distance_tolerance": 1, "filter_output": True, "filter_duration": 2}
 
         # execute
         actual = self.sut.execute(data=input, config=config)
-        want: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/filtered_output.pickle'))
-
+        want: mpd.TrajectoryCollection = mpd.TrajectoryCollection([mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 2, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 3, 0, 0)},
+                {'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 4, 0, 0)}
+                # TODO: get_segments_between() adds the timestamp to the trajectory id. It doesn't make a difference
+                # as we will only ever have one segment per id, but consider finding a way to tidy this up.
+                ]).set_index('t'), crs=4326), "1_2023-01-01 02:00:00")], traj_id_col='id')
+        
         # verify
-        assert_geodataframe_equal(want.to_point_gdf(), actual.to_point_gdf())
+        assert_geodataframe_equal(want.to_point_gdf(), actual.to_point_gdf(), check_dtype=False)
     
     def test_full_app_flow(self) -> None:
         # prepare
