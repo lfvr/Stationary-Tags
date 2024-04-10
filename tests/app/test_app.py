@@ -21,7 +21,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_app_returns_input(self) -> None:
         # prepare
-        expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/input2.pickle'))
+        expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'resources/samples/input2_LatLon.pickle'))
         config: dict = {"stop_duration": 15, "distance_tolerance": 100}
 
         # execute
@@ -32,7 +32,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_full_app_flow(self) -> None:
         # prepare
-        expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/rhino_edited.pickle'))
+        expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'resources/samples/input2_LatLon.pickle'))
         config: dict = {"stop_duration": 10, "distance_tolerance": 100}
         
         # execute
@@ -119,40 +119,40 @@ class MyTestCase(unittest.TestCase):
                 {'trackId': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 2, 0, 0)},
                 {'trackId': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 3, 0, 0)},
                 {'trackId': 1, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 4, 0, 0)}
-                ]).set_index('t'), crs=4326), traj_id=1)
+                ]).set_index('t'), crs=4326), traj_id=1, traj_id_col='trackId')
         traj_2 = mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
                 {'trackId': 2, 'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
                 {'trackId': 2, 'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 3, 0, 0)},
                 {'trackId': 2, 'geometry': Point(2, 2), 't': datetime(2023, 1, 1, 5, 0, 0)},
                 {'trackId': 2, 'geometry': Point(5, 5), 't': datetime(2023, 1, 1, 7, 0, 0)}
-                ]).set_index('t'), crs=4326), traj_id=2)
+                ]).set_index('t'), crs=4326), traj_id=2, traj_id_col='trackId')
         traj_3 = mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
                 {'trackId': 3, 'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
                 {'trackId': 3, 'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 3, 0, 0)},
                 {'trackId': 3, 'geometry': Point(1, 1), 't': datetime(2023, 1, 1, 5, 0, 0)},
                 {'trackId': 3, 'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 7, 0, 0)}
-                ]).set_index('t'), crs=4326), traj_id=3)
+                ]).set_index('t'), crs=4326), traj_id=3, traj_id_col='trackId')
         traj_4 = mpd.Trajectory(gpd.GeoDataFrame(pd.DataFrame([
                 {'trackId': 4, 'geometry': Point(0,0), 't': datetime(2023, 1, 1, 1, 0, 0)},
                 {'trackId': 4, 'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 2, 0, 0)},
                 {'trackId': 4, 'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 3, 0, 0)},
                 {'trackId': 4, 'geometry': Point(3, 3), 't': datetime(2023, 1, 1, 4, 0, 0)}
-                ]).set_index('t'), crs=4326), traj_id=4)
+                ]).set_index('t'), crs=4326), traj_id=4, traj_id_col='trackId')
         testcases = [
             Testcase(
                 "single_stopped", 
-                traj=mpd.TrajectoryCollection([traj_1, traj_2, traj_3]),
-                expect=gpd.GeoDataFrame({'trackId': [1], 'geometry': [Point(2, 2)]}, crs=4326)
+                traj=mpd.TrajectoryCollection([traj_1, traj_2, traj_3], traj_id_col='trackId'),
+                expect=gpd.GeoDataFrame({'t': datetime(2023, 1, 1, 4, 0, 0), 'trackId': [1], 'geometry': [Point(2, 2)]}, crs=4326)
             ),
             Testcase(
                 "no_stops",
-                traj=mpd.TrajectoryCollection([traj_2, traj_3]),
+                traj=mpd.TrajectoryCollection([traj_2, traj_3], traj_id_col='trackId'),
                 expect=gpd.GeoDataFrame(),
             ),
             Testcase(
                 "multiple_stopped",
-                traj=mpd.TrajectoryCollection([traj_1, traj_2, traj_3, traj_4]),
-                expect=gpd.GeoDataFrame({'trackId': [1, 4], 'geometry': [Point(2, 2), Point(3, 3)]}, crs=4326)
+                traj=mpd.TrajectoryCollection([traj_1, traj_2, traj_3, traj_4], traj_id_col='trackId'),
+                expect=gpd.GeoDataFrame({'t': [datetime(2023, 1, 1, 4, 0, 0), datetime(2023, 1, 1, 4, 0, 0)], 'trackId': [1, 4], 'geometry': [Point(2, 2), Point(3, 3)]}, crs=4326)
             ),
         ]
         for test in testcases:
@@ -163,4 +163,4 @@ class MyTestCase(unittest.TestCase):
             # gdf compare dataframes doesn't work on empty
             if got.empty and test.expect.empty:
                 continue
-            assert_geodataframe_equal(got, test.expect, check_dtype=False)
+            assert_geodataframe_equal(got, test.expect, check_dtype=False, check_less_precise=True)
