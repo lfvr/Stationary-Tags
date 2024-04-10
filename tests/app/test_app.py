@@ -30,6 +30,18 @@ class MyTestCase(unittest.TestCase):
         # verify
         self.assertEqual(expected, actual)
 
+    def test_app_returns_filtered_input(self) -> None:
+        # prepare
+        input: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/rhino_edited.pickle'))
+        config: dict = {"stop_duration": 10, "distance_tolerance": 100, "filter_output": True, "filter_duration": 24}
+
+        # execute
+        actual = self.sut.execute(data=input, config=config)
+        want: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'tests/resources/app/filtered_output.pickle'))
+
+        # verify
+        assert_geodataframe_equal(want.to_point_gdf(), actual.to_point_gdf())
+    
     def test_full_app_flow(self) -> None:
         # prepare
         expected: mpd.TrajectoryCollection = pd.read_pickle(os.path.join(ROOT_DIR, 'resources/samples/input2_LatLon.pickle'))
