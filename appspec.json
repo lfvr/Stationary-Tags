@@ -19,7 +19,15 @@
       "name": "Filter output to only show stationary tags",
       "description": "Set to true to only include stationary tags (and exclude all non-stationary tags).",
       "defaultValue": false,
-      "type": "BOOLEAN"
+      "type": "RADIOBUTTONS",
+      "options": [{
+      "value": "false",
+      "displayText": "False"
+    },
+    {
+      "value": "true",
+      "displayText": "True"
+    }]
     },
     {
       "id": "filter_duration",
